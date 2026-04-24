@@ -297,8 +297,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a1a;heig
       <input id="o-name" type="text" placeholder="예: 세무법인 다승">
     </div>
     <div class="frow">
-      <div class="fg"><label>담당자명</label><input id="o-manager" type="text" placeholder="예: 김지혜"></div>
-      <div class="fg"><label>직급</label><input id="o-position" type="text" placeholder="예: 세무사"></div>
+      <div class="fg"><label>담당자명</label><input id="o-manager" type="text" placeholder="예: 조은비"></div>
+      <div class="fg"><label>직급</label><input id="o-position" type="text" placeholder="예: 대리"></div>
     </div>
     <div class="fg"><label>연락처</label><input id="o-tel" type="text" placeholder="예: 02-6268-4524"></div>
     <div class="frow">
@@ -894,16 +894,16 @@ function handleExcelUpload(e){
     let hdrIdx=0,hdrRow=raw[0]||[];
     for(let i=0;i<Math.min(raw.length,5);i++){
       const r2=raw[i];
-      if(r2.some(c=>['업체명','대표자명','대표님성함','사업소득','근로소득'].includes(String(c).trim()))){
+      if(r2.some(c=>['업체명','대표자명','대표님성함','사업소득','근로소득'].includes(String(c).replace(/\n/g,'').trim()))){
         hdrIdx=i; hdrRow=r2; break;
       }
     }
 
-    const isClientDb=hdrRow.some(c=>['업체명','대표자명','사업소득','근로소득'].includes(String(c).trim()));
+    const isClientDb=hdrRow.some(c=>['업체명','대표자명','사업소득','근로소득'].includes(String(c).replace(/\n/g,'').trim()));
 
     // Build column index map
     const colMap={};
-    hdrRow.forEach((h,i)=>{colMap[String(h).trim()]=i;});
+    hdrRow.forEach((h,i)=>{colMap[String(h).replace(/\n/g,'').trim()]=i;});
 
     const tmpl=S.clients[0]||S.common||makeData();
 
