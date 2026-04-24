@@ -1016,173 +1016,124 @@ function excelDate(val){
   return String(val).replace(/\./g,'-').replace(/\//g,'-').trim();
 }
 function downloadSampleExcel(){
-  const workbook = new ExcelJS.Workbook();
-  const ws = workbook.addWorksheet('종소세_입력명단');
-
-  // 색상 정의
-  const colors = {
-    header: 'B8DDE7',      // 라이트 블루
-    headerMain: 'DAEEF3',  // 라이트 블루
-    headerSub: 'E6F5F8',   // 매우 라이트 블루
-    income: 'FFF9E6',      // 연노랑
-    deduction: 'F0FFF0',   // 연초록
-    sincere: 'F3EEFF',     // 연보라
-    docs: 'F0F9FB',        // 매우 라이트 블루
-    newRow: 'E8F5E9',      // 연초록
-    border: 'A8D4DC'       // 라이트 블루 테두리
-  };
-
+  if(!window.XLSX){alert('라이브러리 로드 중입니다. 잠시 후 다시 시도해주세요.');return;}
+  
+  // 워크시트 생성
+  const ws = XLSX.utils.aoa_to_sheet([]);
+  
   // 열 너비
-  ws.columns = [
-    {width: 5},   // No
-    {width: 22},  // 업체명
-    {width: 10},  // 대표자명
-    {width: 8},   // 상태
-    {width: 8},   // 사업소득
-    {width: 8},   // 근로소득
-    {width: 8},   // 임대소득
-    {width: 9},   // 이자·배당
-    {width: 8},   // 기타소득
-    {width: 13},  // 차량번호
-    {width: 12},  // 차량유형
-    {width: 10},  // 보험료증권필요
-    {width: 10},  // 성실신고
-    {width: 12},  // 서류수취
-    {width: 20}   // 비고
-  ];
-
-  // 함수: 셀 스타일 정의
-  function cellStyle(bgColor, bold = false, wrap = false, align = 'center'){
+  ws['!cols'] = [5,22,10,8, 8,8,8,9,8, 13,12,10, 10,12,20].map(w=>({wch:w}));
+  
+  // 색상 팔레트
+  const CH2 = 'B8DDE7', CH = 'DAEEF3', CG = 'E6F5F8';
+  const CI = 'FFF9E6', CC = 'F0FFF0', CS = 'F3EEFF', CA = 'F0F9FB';
+  const CN = 'E8F5E9';
+  
+  function cellStyle(bg, bold = false){
     return {
-      fill: {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF' + bgColor}},
-      font: {name: 'Noto Sans KR', size: 11, bold: bold, color: {argb: 'FF000000'}},
-      alignment: {horizontal: align, vertical: 'center', wrapText: wrap},
+      fill: {patternType: 'solid', fgColor: {rgb: bg}},
+      font: {name: 'Noto Sans KR', sz: 11, bold: bold, color: {rgb: '000000'}},
+      alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
       border: {
-        top: {style: 'thin', color: {argb: 'FF' + colors.border}},
-        bottom: {style: 'thin', color: {argb: 'FF' + colors.border}},
-        left: {style: 'thin', color: {argb: 'FF' + colors.border}},
-        right: {style: 'thin', color: {argb: 'FF' + colors.border}}
+        top: {style: 'thin', color: {rgb: 'A8D4DC'}},
+        bottom: {style: 'thin', color: {rgb: 'A8D4DC'}},
+        left: {style: 'thin', color: {rgb: 'A8D4DC'}},
+        right: {style: 'thin', color: {rgb: 'A8D4DC'}}
       }
     };
   }
-
+  
   // 행 0: 그룹 헤더
-  ws.mergeCells('A1:D1'); ws.getCell('A1').value = '기본 정보 (자동)'; ws.getCell('A1').style = cellStyle(colors.header, true);
-  ws.mergeCells('E1:I1'); ws.getCell('E1').value = '소득 유형  ※ 해당되면 O 입력'; ws.getCell('E1').style = cellStyle(colors.header, true);
-  ws.mergeCells('J1:L1'); ws.getCell('J1').value = '차량 정보'; ws.getCell('J1').style = cellStyle(colors.header, true);
-  ws.getCell('M1').value = '성실신고'; ws.getCell('M1').style = cellStyle(colors.header, true);
-  ws.getCell('N1').value = '진행 체크'; ws.getCell('N1').style = cellStyle(colors.header, true);
-  ws.getCell('O1').value = '비고'; ws.getCell('O1').style = cellStyle(colors.header, true);
-  ws.getRow(1).height = 22;
-
+  for(let c = 0; c < 15; c++){
+    ws[XLSX.utils.encode_cell({r: 0, c})] = {v: '', s: cellStyle(CH2, true)};
+  }
+  ws[XLSX.utils.encode_cell({r:0, c:0})] = {v: '기본 정보 (자동)', s: cellStyle(CH2, true)};
+  ws[XLSX.utils.encode_cell({r:0, c:4})] = {v: '소득 유형  ※ 해당되면 O 입력', s: cellStyle(CH2, true)};
+  ws[XLSX.utils.encode_cell({r:0, c:9})] = {v: '차량 정보', s: cellStyle(CH2, true)};
+  ws[XLSX.utils.encode_cell({r:0, c:12})] = {v: '성실신고', s: cellStyle(CH2, true)};
+  ws[XLSX.utils.encode_cell({r:0, c:13})] = {v: '진행 체크', s: cellStyle(CH2, true)};
+  ws[XLSX.utils.encode_cell({r:0, c:14})] = {v: '비고', s: cellStyle(CH2, true)};
+  
+  ws['!merges'] = [
+    {s:{r:0,c:0}, e:{r:0,c:3}},
+    {s:{r:0,c:4}, e:{r:0,c:8}},
+    {s:{r:0,c:9}, e:{r:0,c:11}},
+  ];
+  
   // 행 1: 컬럼명
   const headers = ['No','업체명','대표자명','상태','사업\n소득','근로\n소득','임대\n소득','이자·\n배당','기타\n소득','차량번호','차량유형\n(소유/렌트/리스)','보험료증권\n필요','성실신고\n대상','서류\n수취','비고'];
-  headers.forEach((h, idx) => {
-    const cell = ws.getCell(2, idx + 1);
-    cell.value = h;
-    cell.style = cellStyle(colors.headerMain, true, true);
+  headers.forEach((h, c) => {
+    ws[XLSX.utils.encode_cell({r: 1, c})] = {v: h, s: cellStyle(CH, true)};
   });
-  ws.getRow(2).height = 42;
-
-  // 행 2: 설명 힌트
-  const hints = ['','','','','복수 가능','복수 가능','복수 가능','복수 가능','복수 가능','예) 12가3456','소유/렌트/리스','차량번호 입력시\n자동표시','O 입력','완료/미완료/불필요','직접 입력'];
-  hints.forEach((h, idx) => {
-    const cell = ws.getCell(3, idx + 1);
-    cell.value = h;
-    cell.style = {
-      ...cellStyle(colors.headerSub, false, true),
-      font: {name: 'Noto Sans KR', size: 8, color: {argb: 'FF777777'}}
-    };
+  
+  // 행 2: 힌트
+  const hints = ['','','','','복수 가능','복수 가능','복수 가능','복수 가능','복수 가능','예) 12가3456','소유/렌트/리스','차량번호\n입력시 자동','O 입력','완료/미완료/불필요','직접 입력'];
+  hints.forEach((h, c) => {
+    const st = cellStyle(CG, false);
+    st.font.sz = 8;
+    st.font.color = {rgb: '777777'};
+    ws[XLSX.utils.encode_cell({r: 2, c})] = {v: h, s: st};
   });
-  ws.getRow(3).height = 18;
-
+  
   // 샘플 데이터
   const samples = [
-    {bg: colors.newRow, no: 1, vals: ['홍길동식당','홍길동','활성','O','O','','','','','소유','','','','근로+사업 예시']},
-    {bg: 'FFFFFF', no: 2, vals: ['김영희컨설팅','김영희','활성','O','','','O','','','렌트','','','','이자배당 예시']},
-    {bg: 'EFF6FF', no: 3, vals: ['이철수사무소','이철수','활성','O','O','','O','O','12가3456','소유','','O','','성실신고+차량 예시']}
+    {bg: CN, no: 1, vals: ['홍길동식당','홍길동','활성','O','O','','','','','소유','','','','근로+사업']},
+    {bg: 'FFFFFF', no: 2, vals: ['김영희컨설팅','김영희','활성','O','','','O','','','렌트','','','','이자배당']},
+    {bg: 'EFF6FF', no: 3, vals: ['이철수사무소','이철수','활성','O','O','','O','O','12가3456','소유','','O','','성실신고+차량']}
   ];
-
+  
   samples.forEach((sample, rowIdx) => {
-    const rNum = 4 + rowIdx;
-    const row = ws.getRow(rNum);
+    const r = 3 + rowIdx;
+    const st_no = cellStyle(sample.bg, false);
+    ws[XLSX.utils.encode_cell({r, c: 0})] = {v: sample.no, s: st_no};
     
-    // No
-    const noCell = ws.getCell(rNum, 1);
-    noCell.value = sample.no;
-    noCell.style = cellStyle(sample.bg);
-
-    // 값들
-    sample.vals.forEach((v, colIdx) => {
-      const cell = ws.getCell(rNum, colIdx + 2);
-      cell.value = v === '' ? null : v;
+    sample.vals.forEach((v, c) => {
+      let bg = sample.bg;
+      if (c >= 3 && c <= 7) bg = CI;  // 소득
+      if (c === 9) bg = CI;  // 차량유형
+      if (c === 11) bg = CS;  // 성실신고
+      if (c === 12) bg = CC;  // 서류
       
-      // 배경색 구분
-      let bgColor = sample.bg;
-      if (colIdx >= 3 && colIdx <= 7) bgColor = colors.income;  // 소득유형
-      if (colIdx === 9) bgColor = colors.income;  // 차량유형
-      if (colIdx === 11) bgColor = colors.sincere;  // 성실신고
-      if (colIdx === 12) bgColor = colors.deduction;  // 서류수취
-      
-      cell.style = {
-        ...cellStyle(bgColor),
-        alignment: {horizontal: colIdx === 1 ? 'left' : 'center', vertical: 'center', wrapText: false}
-      };
+      const st = cellStyle(bg, false);
+      st.alignment.horizontal = (c === 1) ? 'left' : 'center';
+      ws[XLSX.utils.encode_cell({r, c: c + 1})] = {v: v || '', s: st};
     });
-    row.height = 18;
   });
-
+  
+  // 범위 설정
+  ws['!ref'] = 'A1:O6';
+  
   // 데이터 유효성 (드롭다운)
-  ws.dataValidations.add({
-    type: 'list',
-    formula1: '"소유,렌트,리스"',
-    showDropDown: true,
-    allowBlank: true,
-    sqref: 'K4:K1000'
-  });
-  ws.dataValidations.add({
-    type: 'list',
-    formula1: '"O"',
-    showDropDown: true,
-    allowBlank: true,
-    sqref: 'M4:M1000'
-  });
-  ws.dataValidations.add({
-    type: 'list',
-    formula1: '"완료,미완료,불필요"',
-    showDropDown: true,
-    allowBlank: true,
-    sqref: 'N4:N1000'
-  });
-
+  ws['!dataValidations'] = [
+    {sqref: 'K4:K1000', type: 'list', formula1: '"소유,렌트,리스"', showDropDown: true, allowBlank: true},
+    {sqref: 'M4:M1000', type: 'list', formula1: '"O"', showDropDown: true, allowBlank: true},
+    {sqref: 'N4:N1000', type: 'list', formula1: '"완료,미완료,불필요"', showDropDown: true, allowBlank: true},
+  ];
+  
   // 틀 고정
-  ws.views = [{state: 'frozen', ySplit: 3, xSplit: 4, topLeftCell: 'E4'}];
-
+  ws['!freeze'] = {xSplit: 4, ySplit: 3};
+  
+  // 워크북 생성
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '종소세_입력명단');
+  
   // 파일 저장
   const fileName = '종소세_입력명단_샘플.xlsx';
   if('showSaveFilePicker' in window){
     window.showSaveFilePicker({
       suggestedName: fileName,
-      types:[{description:'Excel 파일',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}],
-    }).then(handle=>{
-      workbook.xlsx.writeBuffer().then(buffer=>{
-        handle.createWritable().then(writable=>{
-          writable.write(new Blob([buffer])).then(()=>{
-            writable.close();
-          });
+      types: [{description: 'Excel 파일', accept: {'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']}}]
+    }).then(handle => {
+      XLSX.write(wb, {bookType: 'xlsx', type: 'array'}).then(arr => {
+        handle.createWritable().then(writable => {
+          writable.write(new Blob([arr])).then(() => writable.close());
         });
       });
-    }).catch(err=>{
-      if(err.name!=='AbortError'){
-        workbook.xlsx.writeBuffer().then(buffer=>{
-          saveAs(new Blob([buffer]), fileName);
-        });
-      }
+    }).catch(err => {
+      if(err.name !== 'AbortError') XLSX.writeFile(wb, fileName);
     });
-  }else{
-    workbook.xlsx.writeBuffer().then(buffer=>{
-      saveAs(new Blob([buffer]), fileName);
-    });
+  } else {
+    XLSX.writeFile(wb, fileName);
   }
 }
 
