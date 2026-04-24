@@ -496,16 +496,16 @@ const LS_KEY = 'taxNotice_v3';
 const DEF_INCOME = [
 ];
 const DEF_DEDUCTION = [
-  {id:1, name:'기부금 영수증', desc:'기부한 단체에 요청하시면 됩니다.'},
+  {id:1, name:'주민등록등본상 주소', desc:''},
   {id:2, name:'인적공제 확인 요청', desc:'혼인신고 및 부양가족 변동사항이 있으면 전달해주세요.'},
-  {id:3, name:'의료비 납입 증명서', desc:'홈택스 연말정산 간소화 자료에서 조회 가능합니다.'},
-  {id:4, name:'교육비 납입 증명서', desc:'홈택스 연말정산 간소화 자료에서 조회 가능 또는 학교, 학원에 요청하시면 됩니다.'},
-  {id:5, name:'월세액 관련 자료', desc:'집이 월세인 경우 임대차계약서, 월세 입금 내역 보내주시면 됩니다.'},
+  {id:3, name:'기부금 영수증', desc:'기부한 단체에 요청하시면 됩니다.'},
 ];
 const DEF_EXTRA = [
   {id:1, name:'해외결제내역 카드엑셀파일', desc:'각종 구독료를 해외결제하시는 경우, 홈택스 자료로 확인이 불가능합니다.\n개인 카드사 로그인하셔서 [해외사용내역] 엑셀파일 저장 및 전달 부탁드립니다.'},
   {id:2, name:'홈택스 등록된 카드 외 개인사용 카드 엑셀파일', desc:'카드사에 요청하시면 됩니다.'},
   {id:3, name:'사업장 화재보험료 증권', desc:'보험료 금액, 기간 나오게 해서 보내주세요.'},
+  {id:4, name:'경조사비 내역', desc:'청첩장, 부고장 등 캡쳐해서 보내주시면 됩니다.'},
+  {id:5, name:'사업자 대출 원금 및 이자 상환내역서', desc:'은행에 문의 하시면 됩니다.'},
 ];
 const DEF_NOTES    = '보시고 해당되는 자료만 전달해 주시면 됩니다.\n궁금한 점 있으시면 편하게 연락주세요.';
 const DEF_WARNINGS = '';
@@ -530,11 +530,14 @@ function buildIncomeItems(d){
 }
 function buildDeductionItems(d){
   const items=[];
-  items.push({id:nextIid.deduction++,name:'기부금 영수증',desc:'기부한 단체에 요청하시면 됩니다.'});
+  items.push({id:nextIid.deduction++,name:'주민등록등본상 주소',desc:''});
   items.push({id:nextIid.deduction++,name:'인적공제 확인 요청',desc:'혼인신고 및 부양가족 변동사항이 있으면 전달해주세요.'});
-  items.push({id:nextIid.deduction++,name:'의료비 납입 증명서',desc:'홈택스 연말정산 간소화 자료에서 조회 가능합니다.'});
-  items.push({id:nextIid.deduction++,name:'교육비 납입 증명서',desc:'홈택스 연말정산 간소화 자료에서 조회 가능 또는 학교, 학원에 요청하시면 됩니다.'});
-  items.push({id:nextIid.deduction++,name:'월세액 관련 자료',desc:'집이 월세인 경우 임대차계약서, 월세 입금 내역 보내주시면 됩니다.'});
+  items.push({id:nextIid.deduction++,name:'기부금 영수증',desc:'기부한 단체에 요청하시면 됩니다.'});
+  if(d.hasSincerity){
+    items.push({id:nextIid.deduction++,name:'의료비 납입 증명서',desc:'홈택스 연말정산 간소화 자료에서 조회 가능합니다.'});
+    items.push({id:nextIid.deduction++,name:'교육비 납입 증명서',desc:'홈택스 연말정산 간소화 자료에서 조회 가능 또는 학교, 학원에 요청하시면 됩니다.'});
+    items.push({id:nextIid.deduction++,name:'월세액 관련 자료',desc:'집이 월세인 경우 임대차계약서, 월세 입금 내역 보내주시면 됩니다.'});
+  }
   return items;
 }
 function buildExtraItems(d){
@@ -543,6 +546,8 @@ function buildExtraItems(d){
   items.push({id:nextIid.extra++,name:'해외결제내역 카드엑셀파일',desc:'각종 구독료를 해외결제하시는 경우, 홈택스 자료로 확인이 불가능합니다.\n개인 카드사 로그인하셔서 [해외사용내역] 엑셀파일 저장 및 전달 부탁드립니다.'});
   items.push({id:nextIid.extra++,name:'홈택스 등록된 카드 외 개인사용 카드 엑셀파일',desc:'카드사에 요청하시면 됩니다.'});
   items.push({id:nextIid.extra++,name:'사업장 화재보험료 증권',desc:'보험료 금액, 기간 나오게 해서 보내주세요.'});
+  items.push({id:nextIid.extra++,name:'경조사비 내역',desc:'청첩장, 부고장 등 캡쳐해서 보내주시면 됩니다.'});
+  items.push({id:nextIid.extra++,name:'사업자 대출 원금 및 이자 상환내역서',desc:'은행에 문의 하시면 됩니다.'});
   if(d.vehicleType==='own'){
     items.push({id:nextIid.extra++,name:`${yr} 차량보험증권`,desc:''});
   }else if(d.vehicleType==='lease'){
