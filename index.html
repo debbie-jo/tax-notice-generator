@@ -563,7 +563,7 @@ function pad(n){return String(n).padStart(2,'0');}
 function makeData(){
   return {
     name:'', bizName:'', year:'2025년', type:'정기신고',
-    deadline:'', sendDate:todayStr(), greeting:'',
+    deadline:'', sendDate:todayStr(), greeting:'', greetingCustomized:false,
     items:{income:clone(DEF_INCOME),deduction:clone(DEF_DEDUCTION),extra:clone(DEF_EXTRA)},
     notes:DEF_NOTES, warnings:DEF_WARNINGS,
     hasLabor:false, hasRent:false, hasInterest:false, hasOther:false, hasSincerity:false, vehicles:[{num:'', type:'none'}],
@@ -609,6 +609,10 @@ function migrateVehicles(d){
     delete d.vehicleType;
   }
   if(d&&!Array.isArray(d.vehicles))d.vehicles=[{num:'',type:'none'}];
+  // 기존 데이터 마이그레이션: greetingCustomized 플래그가 없으면 '년' 포함 여부로 추정
+  if(d&&d.greeting&&d.greetingCustomized===undefined){
+    d.greetingCustomized=!d.greeting.includes('년');
+  }
   return d;
 }
 function loadFromStorage(){
@@ -1142,11 +1146,9 @@ function renderPreview(){
   const dl=d&&d.deadline?fmtDate(d.deadline):'미정';
   const sd=d&&d.sendDate?fmtDate(d.sendDate):'';
   const cname=d?d.name:'';
-  // 기본 템플릿 생성 (귀속연도 포함)
-  // "년"이 포함된 인사말 = 자동생성된 기본값 → 항상 새로 생성 (귀속연도 자동 반영)
-  // "년"이 없는 인사말 = 사용자 수정값 → 유지
   const defaultGr=getDefaultGreeting(d&&d.year,type,S.mode==='common'?'':cname);
-  const gr=d&&d.greeting&&!d.greeting.includes('년')?d.greeting:defaultGr;
+  // greetingCustomized=true(직접 수정) → 저장값 유지 / false(기본값) → 귀속연도 반영해 자동 갱신
+  const gr=d&&d.greeting&&d.greetingCustomized?d.greeting:defaultGr;
   const notes=(d?d.notes:DEF_NOTES).split('\n').filter(l=>l.trim());
   const warnings=(d?d.warnings:'').split('\n').filter(l=>l.trim());
 
@@ -1378,7 +1380,16 @@ document.addEventListener('DOMContentLoaded',()=>{
    'c-name','c-biz','c-year','c-type','deadline','senddate','greeting','notes','warnings'
   ].forEach(id=>{
     const el=document.getElementById(id); if(!el)return;
-    const handler=()=>{readForm();if(id==='c-year')updatePeriod();renderPreview();scheduleSave();};
+    const handler=()=>{
+      readForm();
+      if(id==='greeting'){const d=curData();if(d)d.greetingCustomized=true;}
+      if(id==='c-year'){
+        updatePeriod();
+        const d=curData();
+        if(d&&!d.greetingCustomized){const ng=getDefaultGreeting(d.year,d.type,S.mode==='common'?'':d.name);d.greeting=ng;set('greeting',ng);}
+      }
+      renderPreview();scheduleSave();
+    };
     el.addEventListener('input',handler);
     el.addEventListener('change',handler);
   });
